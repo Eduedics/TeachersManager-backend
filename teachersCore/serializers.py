@@ -13,6 +13,17 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # ...
 
         return token
+    def validate(self, attrs):
+        # attrs already contains 'username' and 'password'
+        data = super().validate(attrs)
+
+        # include role + username in the response payload too
+        data.update({
+            "role": self.user.role,
+            "username": self.user.username,
+        })
+        return data
+    
 class TeacherSerializer(ModelSerializer):
     class Meta:
         model=Teacher

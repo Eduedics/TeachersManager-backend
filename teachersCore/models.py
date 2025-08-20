@@ -1,6 +1,21 @@
 from django.db import models
 
-from django.contrib.auth.models import AbstractUser,Group,Permission
+from django.contrib.auth.models import AbstractUser,Group,Permission,BaseUserManager
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, role="teacher", **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, role=role, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        # force  role=admin on createsuperuser
+        return self.create_user(username, email, password, role="admin", **extra_fields)
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -8,6 +23,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
     role = models.CharField(choices=ROLE_CHOICES,max_length=10,default='teacher')
+    email = models.EmailField(unique=True) 
     '''
     When subclassing AbstractUser, you need to override groups and 
     user_permissions fields with related_name so they don’t clash with the default auth.User
@@ -22,6 +38,7 @@ class User(AbstractUser):
         related_name="custom_user_set", 
         blank=True
     )
+    objects=UserManager()
 
     def __str__(self):
         return f"{self.username} ({self.role})" 
