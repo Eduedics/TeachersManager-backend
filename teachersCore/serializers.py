@@ -1,0 +1,37 @@
+from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import Teacher,Attendance,DutyAssignment,DutyPeriod
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['role'] = user.role
+        token['username']=user.username
+        # ...
+
+        return token
+class TeacherSerializer(ModelSerializer):
+    class Meta:
+        model=Teacher
+        fields="__all__"
+
+class AttendanceSerializer(ModelSerializer):
+    class Meta:
+        model=Attendance
+        fields="__all__"
+
+class DutyPeriodSerializer(ModelSerializer):
+    class Meta:
+        model= DutyPeriod
+        fields= "__all__"
+    
+class DutyAssignmentSerializer(ModelSerializer):
+    duty_period=DutyPeriodSerializer(read_only=True)
+    duty_period_id= serializers.PrimaryKeyRelatedField(queryset=DutyPeriod.objects.all(),source="duty_period",write_only=True)
+    teacher_id = serializers.PrimaryKeyRelatedField(queryset=Teacher.objects.all(),source='teacher',write_only=True)
+    class Meta:
+        model=DutyAssignment
+        fields=["id", "duty_period", "duty_period_id", "teacher_id"]
