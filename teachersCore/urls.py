@@ -4,7 +4,8 @@ from .views import *
 
 urlpatterns = [
     path('login/',LoginView.as_view(),name='login'),
-    path('refresh/',RefreshTokenView.as_view(),name='refresh-token'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/',RefreshTokenView.as_view(),name='refresh-token'),
     path('logout/',logout_view,name='logout'),
 
     path("teachers/", ListTeachers, name="list_teachers"),
@@ -14,7 +15,7 @@ urlpatterns = [
     path("teachers/<int:pk>/delete/", Delete_teacher, name="delete_teacher"),
 
     path("attendance/check-in/", Check_in, name="check_in"),
-    path("attendance/<int:pk>/check-out/", Check_out, name="check_out"),
+    path("attendance/check-out/", Check_out, name="check_out"),
     path("attendance/my/", My_attendance, name="my_attendance"),
 
     path("duties/periods/", List_duty_periods, name="list_duty_periods"),
