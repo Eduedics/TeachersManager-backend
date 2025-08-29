@@ -1,4 +1,6 @@
 from django.db import models
+from datetime import timedelta
+from django.utils import timezone
 
 from django.contrib.auth.models import AbstractUser,Group,Permission,BaseUserManager
 class UserManager(BaseUserManager):
@@ -23,7 +25,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
     role = models.CharField(choices=ROLE_CHOICES,max_length=10,default='teacher')
-    email = models.EmailField(unique=True) 
+    email = models.EmailField(unique=True,blank=True, null=True) 
     '''
     When subclassing AbstractUser, you need to override groups and 
     user_permissions fields with related_name so they don’t clash with the default auth.User
@@ -68,13 +70,29 @@ class DutyPeriod(models.Model):
     def __str__(self):
         return f"Duty Period {self.start_date} - {self.end_date}"
     
-class DutyAssignment(models.Model):
-    duty_period = models.ForeignKey(DutyPeriod, on_delete=models.CASCADE, related_name="assignments")
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="assignments")
+# class DutyAssignment(models.Model):
+#     duty_period = models.ForeignKey(DutyPeriod, on_delete=models.CASCADE, related_name="assignments")
+#     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="assignments")
 
+
+#     def __str__(self):
+#         return f"{self.teacher} assigned for {self.duty_period}"
+
+class DutyAssignment(models.Model):
+    duty_period = models.ForeignKey("DutyPeriod", on_delete=models.CASCADE)
+    teacher = models.ForeignKey("Teacher", on_delete=models.CASCADE)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.end_date:
+            self.end_date = self.start_date + timedelta(days=6)
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.teacher} assigned for {self.duty_period}"
+        return f"{self.teacher} assigned from {self.start_date} to {self.end_date}"
+
+
 
 class Attendance(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="attendance")
