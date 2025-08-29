@@ -25,7 +25,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
     role = models.CharField(choices=ROLE_CHOICES,max_length=10,default='teacher')
-    email = models.EmailField(unique=True,blank=True, null=True) 
+    email = models.EmailField( unique=True,blank=True, null=True) 
     '''
     When subclassing AbstractUser, you need to override groups and 
     user_permissions fields with related_name so they don’t clash with the default auth.User
