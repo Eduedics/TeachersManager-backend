@@ -16,8 +16,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         # attrs already contains 'username' and 'password'
         data = super().validate(attrs)
-
-        # include role + username in the response payload too
         data.update({
             "role": self.user.role,
             "username": self.user.username,
@@ -25,9 +23,15 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
     
 class TeacherSerializer(ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.CharField(source='user.email', read_only=True)
     class Meta:
         model=Teacher
-        fields="__all__"
+        fields=['id', 'username', 'email', 'staff_id', 'department', 
+            'subject', 'status', 'duty_eligibility', 'last_assigned_at', 'user']
+        extra_kwargs={
+            'user':{"write_only":True}
+        }
 
 class AttendanceSerializer(ModelSerializer):
     class Meta:
@@ -43,6 +47,7 @@ class DutyAssignmentSerializer(ModelSerializer):
     duty_period=DutyPeriodSerializer(read_only=True)
     duty_period_id= serializers.PrimaryKeyRelatedField(queryset=DutyPeriod.objects.all(),source="duty_period",write_only=True)
     teacher_id = serializers.PrimaryKeyRelatedField(queryset=Teacher.objects.all(),source='teacher',write_only=True)
+    teacher = TeacherSerializer(read_only=True)
     class Meta:
         model=DutyAssignment
-        fields=["id", "duty_period", "duty_period_id", "teacher_id"]
+        fields = ["id", "duty_period", "duty_period_id", "teacher_id", "teacher", "start_date", "end_date"]
