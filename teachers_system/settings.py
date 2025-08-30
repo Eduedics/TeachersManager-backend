@@ -141,26 +141,14 @@ DATABASES = {
     }
 }
 database_url = os.environ.get("DATABASE_URL")
-DATABASES['default']=dj_database_url.parse(database_url)
+if database_url is None:
+    raise ValueError("DATABASE_URL environment variable not set")
 
-# Get database URL from environment variable
-database_url = os.environ.get("DATABASE_URL")
+# Ensure url is a string
+if isinstance(database_url, bytes):
+    database_url = database_url.decode()
 
-# Check if the environment variable exists and is not empty
-if database_url:
-    try:
-        # Parse the PostgreSQL URL and update the database configuration
-        DATABASES['default'] = dj_database_url.parse(database_url)
-        
-        # Ensure we're using the PostgreSQL backend
-        DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
-        
-        print("Using PostgreSQL database from DATABASE_URL environment variable")
-    except Exception as e:
-        print(f"Error parsing DATABASE_URL: {e}")
-        print("Falling back to SQLite database")
-else:
-    print("DATABASE_URL not found, using SQLite database")
+DATABASES['default'] = dj_database_url.parse(database_url)
  
 
 
